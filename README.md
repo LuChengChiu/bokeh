@@ -4,6 +4,9 @@ Blur or black out part of a picture, in the browser. Nothing is uploaded — the
 decoded, composed and encoded on the device, and the build is a single self-contained HTML
 file you can open from disk.
 
+The built file carries a `default-src 'none'` content security policy — inline scripts are
+allowed by hash and nothing else loads, so the page has no way to reach the network.
+
 ## Use
 
 1. Choose a picture, drop one on the window, or paste from the clipboard.
