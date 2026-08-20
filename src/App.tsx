@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Dock from "./Dock";
+import SwapIcon from "./SwapIcon";
 import Frame from "./Frame";
 import { loadPicture, type Picture } from "./load";
 import { toPng } from "./png";
@@ -123,6 +124,11 @@ export default function App() {
       setMsg((e as Error).message);
     }
   }, []);
+
+  const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    void openFile(e.target.files?.[0]);
+    e.target.value = ""; // picking the same file again must reload it
+  };
 
   /* ---------- gestures: one finger on the frame moves it, one finger anywhere
        else pans, two fingers always zoom, double tap toggles true size ---------- */
@@ -295,6 +301,11 @@ export default function App() {
           />
 
           <div className="top">
+            <label className="open">
+              <SwapIcon />
+              Swap
+              <input type="file" accept="image/*" onChange={onPick} />
+            </label>
             <span className="size">
               {Math.round(sel.w)} × {Math.round(sel.h)} · {Math.round(sel.x)},{Math.round(sel.y)}
             </span>
@@ -332,17 +343,10 @@ export default function App() {
       {!pic && (
         <div className="empty">
           <h1>Bokeh</h1>
-          <p>Blur or black out part of a picture. Nothing leaves this device.</p>
+          <p>Bokeh or black out part of a picture. Nothing leaves this device.</p>
           <label className="pick">
             Choose a picture
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                void openFile(e.target.files?.[0]);
-                e.target.value = ""; // picking the same file again must reload it
-              }}
-            />
+            <input type="file" accept="image/*" onChange={onPick} />
           </label>
           <p>or drop one here, or paste from the clipboard</p>
         </div>

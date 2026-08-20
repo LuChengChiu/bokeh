@@ -18,7 +18,7 @@ export default function Dock({ mode, radius, maxRadius, onMode, onRadius, onRese
           <div className="modes">
             {(["blur", "redact"] as const).map((m) => (
               <button key={m} type="button" aria-pressed={mode === m} onClick={() => onMode(m)}>
-                {m === "blur" ? "Blur" : "Redact"}
+                {m === "blur" ? "Bokeh" : "Redact"}
               </button>
             ))}
           </div>
@@ -65,8 +65,8 @@ export default function Dock({ mode, radius, maxRadius, onMode, onRadius, onRese
             </>
           ) : (
             <>
-              <b>Blur may be recoverable.</b> It softens the surround and keeps the region sharp. For
-              anything secret, use Redact.
+              <b>The blur may be recoverable.</b> Bokeh keeps the region sharp and softens everything
+              around it. For anything secret, use Redact.
             </>
           )}
         </p>

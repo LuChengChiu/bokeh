@@ -1,6 +1,6 @@
 # Bokeh
 
-Blur or black out part of a picture, in the browser. Nothing is uploaded — the picture is
+Bokeh or black out part of a picture, in the browser. Nothing is uploaded — the picture is
 decoded, composed and encoded on the device, and the build is a single self-contained HTML
 file you can open from disk.
 
@@ -13,7 +13,7 @@ allowed by hash and nothing else loads, so the page has no way to reach the netw
 2. Drag the region over what should be hidden; drag the handles to resize it, or use arrow
    keys (shift for 10px steps) when it's focused.
 3. Pick a mode:
-   - **Blur** softens everything *outside* the region and keeps the region sharp. Blur can
+   - **Bokeh** keeps the region sharp and softens everything around it. A blur can
      sometimes be reversed — don't use it for secrets.
    - **Redact** fills the region with solid black. Nothing of it survives in the saved file.
 4. **Save** shares the PNG on mobile (Web Share) or downloads `bokeh.png` elsewhere.

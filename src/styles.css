@@ -80,7 +80,7 @@ body {
   color: var(--amber);
   font-variant-numeric: tabular-nums;
 }
-.zoom {
+.zoom, .open {
   display: inline-flex;
   align-items: center;
   font-family: var(--mono);
@@ -95,6 +95,8 @@ body {
   cursor: pointer;
   appearance: none;
 }
+.open { font-weight: 500; }
+.swapicon { opacity: 0.8; margin-right: 5px; }
 .zoom::before { content: "⤡⤢"; font-size: 10px; letter-spacing: -0.15em; opacity: 0.75; margin-right: 4px; }
 
 /* ---------- dock ---------- */
@@ -199,7 +201,7 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
-.pick input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.pick input, .open input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .pick:focus-within { outline: 2px solid var(--brass); outline-offset: 3px; }
 
 /* ---------- status ---------- */
@@ -221,7 +223,7 @@ body {
 }
 .say.on { display: block; }
 
-button:focus-visible, .zoom:focus-visible, .radius:focus-visible {
+button:focus-visible, .zoom:focus-visible, .radius:focus-visible, .open:focus-within {
   outline: 2px solid var(--brass);
   outline-offset: 2px;
 }
