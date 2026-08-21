@@ -3,3 +3,7 @@ dist
 tsconfig.tsbuildinfo
 .vitest-attachments
 __screenshots__
+.terraform
+*.tfstate
+*.tfstate.*
+*.tfvars

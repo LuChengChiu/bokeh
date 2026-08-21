@@ -1,0 +1,89 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # for the OIDC assume-role
+
+# Serialized, never cancelled: killing a run between the upload and its invalidation
+# leaves the new object behind a year-long cached copy of the old one.
+concurrency:
+  group: deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # The suite runs in real Chromium — the product is canvas pixels.
+      - run: npx playwright install --with-deps chromium
+
+      - run: npx tsc -b
+
+      # Includes the build contract test: self-contained output, CSP hashes current.
+      # A stale hash fails here rather than shipping a page whose scripts are all refused.
+      - run: npm test
+
+      - run: npm run build
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # One step, so there is no window in which the object is published and no
+      # invalidation has been queued for it.
+      - name: publish
+        run: |
+          aws s3 cp dist/index.html "s3://${{ vars.BUCKET }}/index.html" \
+            --cache-control "public, max-age=300, s-maxage=31536000" \
+            --content-type "text/html; charset=utf-8"
+
+          id=$(aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.DISTRIBUTION_ID }}" --paths '/*' \
+            --query Invalidation.Id --output text)
+
+          # create-invalidation returns InProgress immediately. Without the wait the
+          # smoke check below would happily pass against the still-cached old page.
+          aws cloudfront wait invalidation-completed \
+            --distribution-id "${{ vars.DISTRIBUTION_ID }}" --id "$id"
+
+      # A green pipeline should mean this exact build is live, not merely that the upload
+      # returned 0. The CSP script hash changes with every bundle, so finding it in the
+      # response proves both that the policy shipped and that it is today's page and not
+      # a stale one — which matters, since the object carries s-maxage=31536000.
+      - name: smoke check
+        run: |
+          url="https://${{ vars.DOMAIN }}/"
+          hash=$(grep -o "sha256-[A-Za-z0-9+/=]*" dist/index.html | head -1)
+          [ -n "$hash" ] || { echo "the built file has no CSP hash to look for"; exit 1; }
+
+          # Everything retries together: the first request after an invalidation is a
+          # cache miss, and CloudFront serves those uncompressed while it compresses in
+          # the background, so the encoding check flakes if it only gets one attempt.
+          for i in $(seq 1 10); do
+            code=$(curl -sS --compressed -D headers -o body -w '%{http_code}' "$url" || true)
+            enc=$(tr -d '\r' < headers | awk -F': ' 'tolower($1)=="content-encoding"{print $2}')
+            case "$enc" in br|gzip) compressed=1 ;; *) compressed= ;; esac
+            grep -qF "$hash" body && build=current || build=stale
+
+            [ "$code" = 200 ] && [ "$build" = current ] && [ -n "$compressed" ] && break
+            echo "attempt $i: code=$code encoding=${enc:-none} build=$build"
+            sleep 10
+          done
+
+          [ "$code" = 200 ] || { echo "never returned 200"; exit 1; }
+          [ "$build" = current ] || { echo "serving a different build than the one just uploaded"; exit 1; }
+          [ -n "$compressed" ] || { echo "not compressed (content-encoding: '${enc:-none}')"; exit 1; }

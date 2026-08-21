@@ -46,13 +46,27 @@ function csp(): Plugin {
 export default defineConfig({
   plugins: [react(), viteSingleFile(), csp()],
   test: {
-    // The product is canvas pixels. jsdom has no renderer, so every seam that
-    // matters has to run in a real browser.
-    browser: {
-      enabled: true,
-      provider: playwright(),
-      headless: true,
-      instances: [{ browser: "chromium" }],
-    },
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "app",
+          include: ["src/**/*.test.ts"],
+          // The product is canvas pixels. jsdom has no renderer, so every seam that
+          // matters has to run in a real browser.
+          browser: {
+            enabled: true,
+            provider: playwright(),
+            headless: true,
+            instances: [{ browser: "chromium" }],
+          },
+        },
+      },
+      {
+        // The build test reads the emitted file. It needs no renderer, and it cannot
+        // run inside one, since it drives vite itself.
+        test: { name: "build", include: ["build.test.ts"], environment: "node" },
+      },
+    ],
   },
 });

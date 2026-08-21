@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "deploy": "npm run build && aws s3 cp dist/index.html s3://$BOKEH_BUCKET/index.html --cache-control \"public, max-age=300, s-maxage=31536000\" --content-type \"text/html; charset=utf-8\" && aws cloudfront create-invalidation --distribution-id $BOKEH_DISTRIBUTION --paths \"/*\""
   },
   "dependencies": {
     "morphicons": "1.7.0",
