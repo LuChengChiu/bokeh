@@ -26,10 +26,16 @@ data "aws_iam_policy_document" "assume" {
     }
 
     # This repository, main branch only. A fork or a PR branch cannot assume the role.
+    # Two spellings: GitHub is moving the subject to owner@id/repo@id, and which one a
+    # token carries is GitHub's call, not ours — matching only the old form gets an
+    # AccessDenied that looks exactly like a misconfigured role.
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo}:ref:refs/heads/main"]
+      values = [
+        "repo:${var.github_repo}:ref:refs/heads/main",
+        "repo:${var.github_repo_immutable}:ref:refs/heads/main",
+      ]
     }
   }
 }

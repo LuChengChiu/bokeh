@@ -29,3 +29,11 @@ variable "github_repo" {
 locals {
   bucket = coalesce(var.bucket_name, var.domain)
 }
+
+# `gh api repos/OWNER/REPO/actions/oidc/customization/sub` reports the prefix GitHub
+# actually signs into the token, ids included.
+variable "github_repo_immutable" {
+  description = "The same repo as github_repo, in GitHub's owner@id/repo@id subject form."
+  type        = string
+  default     = "LuChengChiu@153189868/bokeh@1339721549"
+}
