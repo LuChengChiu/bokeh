@@ -30,7 +30,7 @@ function csp(): Plugin {
           "default-src 'none'",
           `script-src ${hashes.join(" ")}`,
           "style-src 'unsafe-inline'", // the inlined stylesheet, plus React's style attributes
-          "img-src blob:", // the object-URL fallback in load.ts, when createImageBitmap can't decode
+          "img-src blob: data:", // the object-URL fallback in load.ts, and the inline SVG favicon
           "base-uri 'none'",
           "form-action 'none'",
         ].join("; ");

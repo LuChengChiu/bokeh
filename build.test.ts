@@ -46,11 +46,10 @@ test("the built file pulls in nothing from outside itself", () => {
   const markup = html.replace(inline, "<script></script>").replace(/<style[^>]*>[\s\S]*?<\/style>/g, "");
 
   // A src or href reaching off the device would be a request the CSP has to refuse.
-  // Better to never emit one than to rely on the policy catching it. blob: only, because
-  // that is all the policy allows — an asset small enough for vite to inline as a data:
-  // URI would look harmless here and still be blocked on the deployed page.
+  // Better to never emit one than to rely on the policy catching it. blob: and data: only,
+  // since those are all the policy allows and neither leaves the device.
   for (const [, url] of markup.matchAll(/\s(?:src|href)="([^"]*)"/g)) {
-    expect({ url, ok: /^blob:/.test(url) }).toEqual({ url, ok: true });
+    expect({ url, ok: /^(blob|data):/.test(url) }).toEqual({ url, ok: true });
   }
 });
 
